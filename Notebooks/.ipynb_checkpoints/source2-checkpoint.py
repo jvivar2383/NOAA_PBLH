@@ -136,17 +136,18 @@ def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup
     """
     import matplotlib.pyplot as plt
     import numpy as np
-    
+    import seaborn as sns
     fig, ax =plt.subplots(figsize = (10,10))
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
     pcnr.columns = pcnr.columns.hour
     
-
-    CS = plt.contourf(pcnr.columns, np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
+    # np.flip(pcnr.index.values),np.flip(pcnr.values)
+    CS = plt.pcolormesh(pcnr.columns,np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel('CNR (dB)')
-    
+    #xticklabels,
+    #sns.heatmap(pcnr, xticklabels= False,cmap = "seismic")
     
     plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
     plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
@@ -159,6 +160,45 @@ def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup
     plt.legend()
     plt.gcf()
     plt.show()
+    
+    
+#will give it a better name :)
+
+def do_the_thing(C, date):
+    
+    variables.extract()
+    cnr_17 = variables.cnr_day
+    time_17 = pd.to_datetime(variables.time_day, unit = 's', utc = True)
+    
+    
+    
+    july17_cnr = dataframe_set(cnr_17, time_17, date)
+
+
+    july17_cnrmean = pbl_heigth(july17_cnr, stat = "mean", var_type = "CNR")
+    july17_cnrstd = pbl_heigth(july17_cnr, var_type = "CNR")
+    july17_cnrmedian = pbl_heigth(july17_cnr, stat = "median", var_type = "CNR")
+
+
+    #Getting liDAR derived values for PBL
+
+    pbl_17 = variables.atm_structures
+    df_structures_17 = dataframe_set(pbl_17, time_17, date)
+    lidar_pbl17 = pbl_lidar(df_structures_17)
+
+    #lidar_pbl17 = lidar_pbl17[lidar_pbl17.index.date ==pd.Timestamp("2021-07-17").date()]
+
+    windsp_17 = variables.ver_wind_speed
+    df_wind = dataframe_set(windsp_17, time_17, date)
+    
+    wind_var = pbl_heigth(df_wind,  var_type = "wind")
+
+
+
+    plot_all(july17_cnr,lidar_pbl17,july17_cnrmean, july17_cnrstd,july17_cnrmedian, wind_var,date)
+
+
+
     
 class VAREXTRACT:
     
