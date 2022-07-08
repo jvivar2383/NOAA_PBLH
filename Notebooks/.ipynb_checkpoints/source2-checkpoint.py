@@ -6,7 +6,7 @@ Created on Wed Jun 29 17:59:35 2022
 @author: jenifervivar
 """
 
-def pbl_heigth(df, stat = "std"):
+def pbl_heigth(df, stat = "std", var_type = None):
     
     """
     input:
@@ -27,15 +27,18 @@ def pbl_heigth(df, stat = "std"):
     df_cop = df.transpose()
     df_cop.index = df_cop.index.astype(int)
     
-    #applying different statiscs values per hour     
-    if stat == "mean":
-        std_series = df_cop.resample('1H', axis=1).mean()
-    elif stat == "median":
-        std_series = df_cop.resample('1H', axis=1).median()
-    else:
-        std_series = df_cop.resample('1H', axis=1).std()
+    if var_type == "CNR":
+        #applying different statiscs values per hour     
+        if stat == "mean":
+            std_series = df_cop.resample('1H', axis=1).mean()
+        elif stat == "median":
+            std_series = df_cop.resample('1H', axis=1).median()
+        else:
+            std_series = df_cop.resample('1H', axis=1).std()
 
     #gets values for the date of interest
+    if var_type == "wind":
+        std_series = df_cop.resample('1H', axis=1).var()
     
     std_series = std_series.transpose()
     rval = []
@@ -45,8 +48,18 @@ def pbl_heigth(df, stat = "std"):
     for xval in std_series.iterrows(): 
         time = xval[0]
         temp = xval[1]
+        
+        if var_type =="wind":
+            
+            temp1 = temp[temp<0.16]
+            if len(temp1) !=0:
+                val = list(temp1)[0]
+                maxindex = (temp == val).argmax()
+            else:
+                maxindex = temp.argmin()
+        else:    
         # argmax returns index of place in series with largest value
-        maxindex = temp.argmax()
+            maxindex = temp.argmax()
         # get index value (height) of place of largest value
 
         pblht = int(temp.index[maxindex])
@@ -56,6 +69,8 @@ def pbl_heigth(df, stat = "std"):
         tval.append(time)
         #stdra.append(std)
     return pd.to_datetime(tval),pbl
+
+
 
 
 
@@ -105,7 +120,7 @@ def pbl_lidar(df):
 
 
     
-def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup_median= None, date = ""):
+def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup_median= None,wind_std = None, date = ""):
     
     """
     The function plots all calculated CNR values on a heatmap/contour plot
@@ -136,6 +151,7 @@ def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup
     plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
     plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
     plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
+    plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
     plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
     plt.title("PBL Calculations for "+ date)
     plt.ylabel("Heigth (m)")
@@ -171,7 +187,7 @@ class VAREXTRACT:
         self.spectral_width_day = np.array([])
         self.atm_structures = np.array([])
         self.ver_wind_speed = np.array([])
-        
+        self.range_day = np.array([])
         
     def extract(self):
 
@@ -198,6 +214,7 @@ class VAREXTRACT:
                 dumm_spectral = sweep_file.variables["doppler_spectrum_width"][:]
                 dum_struct = sweep_file.variables["atmospherical_structures_type"][:]
                 dumm_wind = sweep_file.variables["radial_wind_speed"][:]
+                dumm_range = sweep_file.variables["range"][:]
                 
                 #appending all the values into one numpy array
                 self.cnr_day =np.append(self.cnr_day, dumm_cnr)
@@ -206,4 +223,5 @@ class VAREXTRACT:
                 self.spectral_width_day = np.append(self.spectral_width_day, dumm_spectral)
                 self.atm_structures = np.append(self.atm_structures, dum_struct)
                 self.ver_wind_speed = np.append(self.ver_wind_speed, dumm_wind)
-                
+                self.range_day = np.append(self.range_day, dumm_range)
+               
