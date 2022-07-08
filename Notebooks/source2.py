@@ -140,24 +140,23 @@ def plot_all(df_cnr = None, df_lidar= None, tup_mean = None, tup_std = None, tup
     fig, ax =plt.subplots(figsize = (10,10))
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
-    pcnr.columns = pcnr.columns.hour
-    
-
-    CS = plt.contourf(pcnr.columns, np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
+    #pcnr.columns = pcnr.columns.hour
+    #CS = plt.contourf(pcnr.columns, np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
+    CS = plt.pcolormesh(pcnr.columns, pcnr.index.values,pcnr.values, cmap= "seismic")
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel('CNR (dB)')
-    
-    
-    plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
-    plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
-    plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
-    plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
-    plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
-    plt.title("PBL Calculations for "+ date)
-    plt.ylabel("Heigth (m)")
-    plt.xlabel("Time (UTC)")
-    plt.legend()
-    plt.gcf()
+    fig.autofmt_xdate() 
+    if isinstance(tup_mean, (list, np.ndarray)): 
+        plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
+        plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
+        plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
+        plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
+        plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
+        plt.title("PBL Calculations for "+ date)
+        plt.ylabel("Heigth (m)")
+        plt.xlabel("Time (UTC)")
+        plt.legend()
+        plt.gcf()
     plt.show()
     
 class VAREXTRACT:
