@@ -158,7 +158,7 @@ def plot_all(
     """
     import matplotlib.pyplot as plt
     import numpy as np
-<<<<<<< HEAD
+
     import seaborn as sns
     fig, ax =plt.subplots(figsize = (10,10))
     pcnr= df_cnr.transpose()
@@ -177,8 +177,7 @@ def plot_all(
     plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
     plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
     plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
-    plt.title("PBL Calculations for "+ date)
-=======
+
 
     fig, ax = plt.subplots(figsize=(10, 10))
     pcnr = df_cnr.transpose()
@@ -210,12 +209,11 @@ def plot_all(
     if isinstance(df_lidar, tlist):
         plt.plot(df_lidar.index.hour, df_lidar, label="LiDAR Values", color="yellow")
     plt.title("PBL Calculations for " + date)
->>>>>>> 109bade940cf0c60df604f1b4c06da8dcfff350f
+
     plt.ylabel("Heigth (m)")
     plt.xlabel("Time (UTC)")
     plt.legend()
-    plt.gcf()
-<<<<<<< HEAD
+
     plt.show()
     
     
@@ -256,13 +254,10 @@ def do_the_thing(C, date):
 
 
 
-    
-=======
+
     # plt.show()
     return ax
 
-
->>>>>>> 109bade940cf0c60df604f1b4c06da8dcfff350f
 class VAREXTRACT:
 
     """
@@ -323,9 +318,7 @@ class VAREXTRACT:
                 self.cnr_day = np.append(self.cnr_day, dumm_cnr)
                 self.time_day = np.append(self.time_day, dumm_time)
                 self.relat_beta_day = np.append(self.relat_beta_day, dumm_rela_beta)
-                self.spectral_width_day = np.append(
-                    self.spectral_width_day, dumm_spectral
-                )
+                self.spectral_width_day = np.append(self.spectral_width_day, dumm_spectral)
                 self.atm_structures = np.append(self.atm_structures, dum_struct)
                 self.ver_wind_speed = np.append(self.ver_wind_speed, dumm_wind)
                 self.range_day = np.append(self.range_day, dumm_range)
