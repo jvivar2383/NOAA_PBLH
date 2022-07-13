@@ -87,7 +87,7 @@ def pbl_height(df, stat="std", var_type=None):
     return pd.to_datetime(tval), pbl
 
 
-def dataframe_set(array1, time_array, day=None):
+def dataframe_set(array1, time_array, day=None, columntype=str):
     """
     input:
     the function takes two arrays as inputs, an arrays of values and a datetime array. The fucntion also takes
@@ -101,10 +101,11 @@ def dataframe_set(array1, time_array, day=None):
     import numpy as np
     import pandas as pd
 
-    columns = (np.array([i for i in range(200, 5200, 100)])).astype(str)
+    # heights are set.
+    columns = (np.array([i for i in range(200, 5200, 100)])).astype(columntype)
     df = pd.DataFrame(
-        np.flip((array1)).reshape(int(len(array1) / 50), 50),
-        columns=np.flip(columns),
+        array1.reshape(int(len(array1) / 50), 50),
+        columns=columns,
         index=(time_array.round("S")),
         )
     if day:
@@ -142,7 +143,8 @@ def plot_all(
     tup_median=None,
     wind_std=None,
     date="",
-    cbarlbl = "CNR (dB)"
+    cbarlbl = "CNR (dB)",
+    cmap = 'seismic'
 ):
 
     """
@@ -162,22 +164,14 @@ def plot_all(
 
     import seaborn as sns
     fig, ax =plt.subplots(figsize = (10,10))
+
+    # the transpose does not take a long time. It is the pcolormesh that takes a lont time
+    # to render all the points.
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
-    
-    # np.flip(pcnr.index.values),np.flip(pcnr.values)
-    CS = plt.pcolormesh(pcnr.columns,np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
-    cbar = fig.colorbar(CS)
-    cbar.ax.set_ylabel('CNR (dB)')
-    #xticklabels,
-    #sns.heatmap(pcnr, xticklabels= False,cmap = "seismic")
+    CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
 
-    fig, ax = plt.subplots(figsize=(10, 10))
-    pcnr = df_cnr.transpose()
-    pcnr.index = pcnr.index.astype(int)
-    # pcnr.columns = pcnr.columns.hour
-    # CS = plt.contourf(pcnr.columns, np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
-    CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap="seismic")
+
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel(cbarlbl)
     fig.autofmt_xdate()
@@ -205,6 +199,7 @@ def plot_all(
 
     plt.ylabel("Heigth (m)")
     plt.xlabel("Time (UTC)")
+    
     plt.legend()
 
     plt.show()
