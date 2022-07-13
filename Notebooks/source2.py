@@ -87,7 +87,7 @@ def pbl_height(df, stat="std", var_type=None):
     return pd.to_datetime(tval), pbl
 
 
-def dataframe_set(array1, time_array, day):
+def dataframe_set(array1, time_array, day=None):
     """
     input:
     the function takes two arrays as inputs, an arrays of values and a datetime array. The fucntion also takes
@@ -106,8 +106,9 @@ def dataframe_set(array1, time_array, day):
         np.flip((array1)).reshape(int(len(array1) / 50), 50),
         columns=np.flip(columns),
         index=(time_array.round("S")),
-    )
-    df = df[df.index.date == pd.Timestamp(day).date()]
+        )
+    if day:
+        df = df[df.index.date == pd.Timestamp(day).date()]
     return df
 
 
@@ -163,7 +164,6 @@ def plot_all(
     fig, ax =plt.subplots(figsize = (10,10))
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
-    pcnr.columns = pcnr.columns.hour
     
     # np.flip(pcnr.index.values),np.flip(pcnr.values)
     CS = plt.pcolormesh(pcnr.columns,np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
@@ -171,13 +171,6 @@ def plot_all(
     cbar.ax.set_ylabel('CNR (dB)')
     #xticklabels,
     #sns.heatmap(pcnr, xticklabels= False,cmap = "seismic")
-    
-    plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
-    plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
-    plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
-    plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
-    plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
-
 
     fig, ax = plt.subplots(figsize=(10, 10))
     pcnr = df_cnr.transpose()
