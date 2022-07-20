@@ -66,7 +66,8 @@ def pbl_height(df, stat="std", var_type=None):
         temp = xval[1]
 
         if var_type == "wind":
-
+            
+            
             temp1 = temp[temp < 0.16]
             if len(temp1) != 0:
                 val = list(temp1)[0]
