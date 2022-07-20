@@ -144,7 +144,8 @@ def plot_all(
     wind_std=None,
     date="",
     cbarlbl = "CNR (dB)",
-    cmap = 'seismic'
+    cmap = 'seismic',
+    plot_type = 'contourf'
 ):
 
     """
@@ -169,8 +170,12 @@ def plot_all(
     # to render all the points.
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
-    CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
-
+    if plot_type == 'pcolormesh':
+        CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
+    if plot_type == 'contourf':
+        CS = plt.contourf(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
+    else:
+        CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
 
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel(cbarlbl)
@@ -213,36 +218,24 @@ def do_the_thing(C, date):
     cnr_17 = variables.cnr_day
     time_17 = pd.to_datetime(variables.time_day, unit = 's', utc = True)
     
-    
-    
     july17_cnr = dataframe_set(cnr_17, time_17, date)
-
 
     july17_cnrmean = pbl_heigth(july17_cnr, stat = "mean", var_type = "CNR")
     july17_cnrstd = pbl_heigth(july17_cnr, var_type = "CNR")
     july17_cnrmedian = pbl_heigth(july17_cnr, stat = "median", var_type = "CNR")
 
-
     #Getting liDAR derived values for PBL
-
     pbl_17 = variables.atm_structures
     df_structures_17 = dataframe_set(pbl_17, time_17, date)
     lidar_pbl17 = pbl_lidar(df_structures_17)
 
     #lidar_pbl17 = lidar_pbl17[lidar_pbl17.index.date ==pd.Timestamp("2021-07-17").date()]
-
     windsp_17 = variables.ver_wind_speed
     df_wind = dataframe_set(windsp_17, time_17, date)
     
     wind_var = pbl_heigth(df_wind,  var_type = "wind")
 
-
-
     plot_all(july17_cnr,lidar_pbl17,july17_cnrmean, july17_cnrstd,july17_cnrmedian, wind_var,date)
-
-
-
-
     # plt.show()
     return ax
 
