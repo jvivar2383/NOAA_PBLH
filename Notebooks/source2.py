@@ -33,8 +33,8 @@ def pbl_height_sub(df, stat="std", var_type="CNR", avetime="1H"):
             std_series = df_cop.resample(avetime, axis=1).mean()
         elif stat == "median":
             std_series = df_cop.resample(avetime, axis=1).median()
-        elif stat == "var":
-            std_series = df_cop.resample(avetime, axis=1).var()
+        #elif stat == "var":
+           # std_series = df_cop.resample(avetime, axis=1).var()
         else:
             std_series = df_cop.resample(avetime, axis=1).std()
 
@@ -105,9 +105,9 @@ def dataframe_set(array1, time_array, day=None, columntype=str):
     # heights are set.
     columns = (np.array([i for i in range(200, 5200, 100)])).astype(columntype)
     df = pd.DataFrame(
-        array1.reshape(int(len(array1) / 50), 50),
-        columns=columns,
-        index=(time_array.round("S")),
+        np.flip(array1).reshape(int(len(array1) / 50), 50),
+        columns= np.flip(columns),
+        index= np.flip(time_array.round("S")),
         )
     if day:
         df = df[df.index.date == pd.Timestamp(day).date()]
@@ -153,8 +153,8 @@ def plot_all(
     The function plots all calculated CNR values on a heatmap/contour plot
 
     input:
-    cnr data frane
-    pbl datafrane
+    cnr data frame
+    pbl dataframe
     tuples for mean, median and std
     the date (as string) for title name
 
