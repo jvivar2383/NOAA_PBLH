@@ -69,11 +69,12 @@ def pbl_height(df, stat="std", var_type=None):
             
             
             temp1 = temp[temp < 0.16]
+            print(temp1)
             if len(temp1) != 0:
                 val = list(temp1)[0]
                 maxindex = (temp == val).argmax()
-            else:
-                maxindex = temp.argmin()
+            #else:
+            #    maxindex = temp.argmin()
         else:
             # argmax returns index of place in series with largest value
             maxindex = temp.argmax()
@@ -208,7 +209,7 @@ def plot_all(
     
     plt.legend()
 
-    plt.show()
+    #plt.show()
     
     
 #will give it a better name :)
