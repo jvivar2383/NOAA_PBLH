@@ -315,7 +315,7 @@ class Talagrand:
         return df
 
     def add_data(self, df, wind_direction=False, verbose=False):
-        obs_col = [x for x in df.columns if ` in x]
+        obs_col = [x for x in df.columns if 'obs' in x]
         print(obs_col)
         obs_col = obs_col[0]
         # this keeps rows which have at least one value above threshold.
