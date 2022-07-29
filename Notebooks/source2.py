@@ -329,7 +329,10 @@ class VAREXTRACT:
         self.spectral_width_day = np.array([])
         self.atm_structures = np.array([])
         self.ver_wind_speed = np.array([])
+        self.ver_wind_speed_status = np.array([])
         self.range_day = np.array([])
+          
+
 
     def extract(self):
 
@@ -355,6 +358,7 @@ class VAREXTRACT:
                 dumm_spectral = sweep_file.variables["doppler_spectrum_width"][:]
                 dum_struct = sweep_file.variables["atmospherical_structures_type"][:]
                 dumm_wind = sweep_file.variables["radial_wind_speed"][:]
+                dumm_wind_status = sweep_file.variables["radial_wind_speed_status"][:]
                 dumm_range = sweep_file.variables["range"][:]
 
                 # appending all the values into one numpy array
@@ -364,4 +368,11 @@ class VAREXTRACT:
                 self.spectral_width_day = np.append(self.spectral_width_day, dumm_spectral)
                 self.atm_structures = np.append(self.atm_structures, dum_struct)
                 self.ver_wind_speed = np.append(self.ver_wind_speed, dumm_wind)
+                self.ver_wind_speed_status = np.append(self.ver_wind_speed_status, dumm_wind_status)
                 self.range_day = np.append(self.range_day, dumm_range)
+
+        # make vertical wind speed = nan in places where the status is equal to 0.
+        iii = np.where(self.ver_wind_speed_status==0)
+        self.ver_wind_speed[iii] = np.nan
+
+
