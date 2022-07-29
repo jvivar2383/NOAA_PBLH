@@ -67,14 +67,14 @@ def pbl_height(df, stat="std", var_type=None):
 
         if var_type == "wind":
             
-            
+            #the height is adopted at the first height where the var is lover than 0.16 m^2/s^2   
             temp1 = temp[temp < 0.16]
             print(temp1)
             if len(temp1) != 0:
                 val = list(temp1)[0]
                 maxindex = (temp == val).argmax()
             #else:
-            #    maxindex = temp.argmin()
+            #   maxindex = temp.argmin()
         else:
             # argmax returns index of place in series with largest value
             maxindex = temp.argmax()
@@ -170,6 +170,7 @@ def plot_all(
 
     # the transpose does not take a long time. It is the pcolormesh that takes a lont time
     # to render all the points.
+    
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
     if plot_type == 'pcolormesh':
@@ -182,6 +183,7 @@ def plot_all(
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel(cbarlbl)
     fig.autofmt_xdate()
+    
     tlist = (list, np.ndarray, tuple)
     if isinstance(tup_mean, tlist):
         plt.plot(

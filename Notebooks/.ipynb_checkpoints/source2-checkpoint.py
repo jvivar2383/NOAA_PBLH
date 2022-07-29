@@ -33,8 +33,8 @@ def pbl_height_sub(df, stat="std", var_type="CNR", avetime="1H"):
             std_series = df_cop.resample(avetime, axis=1).mean()
         elif stat == "median":
             std_series = df_cop.resample(avetime, axis=1).median()
-        elif stat == "var":
-            std_series = df_cop.resample(avetime, axis=1).var()
+        #elif stat == "var":
+           # std_series = df_cop.resample(avetime, axis=1).var()
         else:
             std_series = df_cop.resample(avetime, axis=1).std()
 
@@ -66,13 +66,14 @@ def pbl_height(df, stat="std", var_type=None):
         temp = xval[1]
 
         if var_type == "wind":
-
+            
+            #the height is adopted at the first height where the var is lover than 0.16 m^2/s^2   
             temp1 = temp[temp < 0.16]
             if len(temp1) != 0:
                 val = list(temp1)[0]
                 maxindex = (temp == val).argmax()
-            else:
-                maxindex = temp.argmin()
+            #else:
+             #   maxindex = temp.argmin()
         else:
             # argmax returns index of place in series with largest value
             maxindex = temp.argmax()
@@ -87,7 +88,7 @@ def pbl_height(df, stat="std", var_type=None):
     return pd.to_datetime(tval), pbl
 
 
-def dataframe_set(array1, time_array, day):
+def dataframe_set(array1, time_array, day=None, columntype=str):
     """
     input:
     the function takes two arrays as inputs, an arrays of values and a datetime array. The fucntion also takes
@@ -101,13 +102,15 @@ def dataframe_set(array1, time_array, day):
     import numpy as np
     import pandas as pd
 
-    columns = (np.array([i for i in range(200, 5200, 100)])).astype(str)
+    # heights are set.
+    columns = (np.array([i for i in range(200, 5200, 100)])).astype(columntype)
     df = pd.DataFrame(
-        np.flip((array1)).reshape(int(len(array1) / 50), 50),
-        columns=np.flip(columns),
-        index=(time_array.round("S")),
-    )
-    df = df[df.index.date == pd.Timestamp(day).date()]
+        np.flip(array1).reshape(int(len(array1) / 50), 50),
+        columns= np.flip(columns),
+        index= np.flip(time_array.round("S")),
+        )
+    if day:
+        df = df[df.index.date == pd.Timestamp(day).date()]
     return df
 
 
@@ -141,15 +144,17 @@ def plot_all(
     tup_median=None,
     wind_std=None,
     date="",
-    cbarlbl = "CNR (dB)"
+    cbarlbl = "CNR (dB)",
+    cmap = 'seismic',
+    plot_type = 'contourf'
 ):
 
     """
     The function plots all calculated CNR values on a heatmap/contour plot
 
     input:
-    cnr data frane
-    pbl datafrane
+    cnr data frame
+    pbl dataframe
     tuples for mean, median and std
     the date (as string) for title name
 
@@ -161,30 +166,18 @@ def plot_all(
 
     import seaborn as sns
     fig, ax =plt.subplots(figsize = (10,10))
+
+    # the transpose does not take a long time. It is the pcolormesh that takes a lont time
+    # to render all the points.
     pcnr= df_cnr.transpose()
     pcnr.index = pcnr.index.astype(int)
-    pcnr.columns = pcnr.columns.hour
-    
-    # np.flip(pcnr.index.values),np.flip(pcnr.values)
-    CS = plt.pcolormesh(pcnr.columns,np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
-    cbar = fig.colorbar(CS)
-    cbar.ax.set_ylabel('CNR (dB)')
-    #xticklabels,
-    #sns.heatmap(pcnr, xticklabels= False,cmap = "seismic")
-    
-    plt.plot(tup_mean[0].hour, tup_mean[1], label = "CNR-mean derived Values", color = "lime")
-    plt.plot(tup_std[0].hour, tup_std[1], label = "CNR-STD derived Values", color = "deeppink")
-    plt.plot(tup_median[0].hour, tup_median[1], label = "CNR-Median derived Values", color = "white")
-    plt.plot(wind_std[0].hour, wind_std[1], label = "Wind Variance", color = "black")
-    plt.plot(df_lidar.index.hour,df_lidar, label = "LiDAR Values", color = "yellow")
+    if plot_type == 'pcolormesh':
+        CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
+    if plot_type == 'contourf':
+        CS = plt.contourf(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
+    else:
+        CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap=cmap)
 
-
-    fig, ax = plt.subplots(figsize=(10, 10))
-    pcnr = df_cnr.transpose()
-    pcnr.index = pcnr.index.astype(int)
-    # pcnr.columns = pcnr.columns.hour
-    # CS = plt.contourf(pcnr.columns, np.flip(pcnr.index.values),np.flip(pcnr.values), cmap= "seismic")
-    CS = plt.pcolormesh(pcnr.columns, pcnr.index.values, pcnr.values, cmap="seismic")
     cbar = fig.colorbar(CS)
     cbar.ax.set_ylabel(cbarlbl)
     fig.autofmt_xdate()
@@ -212,6 +205,7 @@ def plot_all(
 
     plt.ylabel("Heigth (m)")
     plt.xlabel("Time (UTC)")
+    
     plt.legend()
 
     plt.show()
@@ -225,36 +219,24 @@ def do_the_thing(C, date):
     cnr_17 = variables.cnr_day
     time_17 = pd.to_datetime(variables.time_day, unit = 's', utc = True)
     
-    
-    
     july17_cnr = dataframe_set(cnr_17, time_17, date)
-
 
     july17_cnrmean = pbl_heigth(july17_cnr, stat = "mean", var_type = "CNR")
     july17_cnrstd = pbl_heigth(july17_cnr, var_type = "CNR")
     july17_cnrmedian = pbl_heigth(july17_cnr, stat = "median", var_type = "CNR")
 
-
     #Getting liDAR derived values for PBL
-
     pbl_17 = variables.atm_structures
     df_structures_17 = dataframe_set(pbl_17, time_17, date)
     lidar_pbl17 = pbl_lidar(df_structures_17)
 
     #lidar_pbl17 = lidar_pbl17[lidar_pbl17.index.date ==pd.Timestamp("2021-07-17").date()]
-
     windsp_17 = variables.ver_wind_speed
     df_wind = dataframe_set(windsp_17, time_17, date)
     
     wind_var = pbl_heigth(df_wind,  var_type = "wind")
 
-
-
     plot_all(july17_cnr,lidar_pbl17,july17_cnrmean, july17_cnrstd,july17_cnrmedian, wind_var,date)
-
-
-
-
     # plt.show()
     return ax
 
