@@ -33,29 +33,33 @@ def pbl_height_sub(df, stat="std", var_type="CNR", avetime="1H"):
             std_series = df_cop.resample(avetime, axis=1).mean()
         elif stat == "median":
             std_series = df_cop.resample(avetime, axis=1).median()
-        #elif stat == "var":
-           # std_series = df_cop.resample(avetime, axis=1).var()
+
+        elif stat == "var":
+            std_series = df_cop.resample(avetime, axis=1).var()
         else:
             std_series = df_cop.resample(avetime, axis=1).std()
 
     # gets values for the date of interest
     if var_type == "wind":
         std_series = df_cop.resample(avetime, axis=1).var()
+        
     return std_series.transpose()
 
 
-def pbl_height(df, stat="std", var_type=None):
-
+def pbl_height(df, stat="std", var_type=None, avetime="1H"):
+    
+    from statistics import mode
+    import numpy as np
     """
     input:
     This functions takes a dataframe with dates as index, and the statistic of interest you want o calculate per hour.
     The default is std.
 
-    outpu:
+    output:
     the functions outputs a tupple of two arrays, a datetime array and an array with the PBL heigth
 
     """
-    std_series = pbl_height_sub(df, stat, var_type)
+    std_series = pbl_height_sub(df, stat, var_type, avetime="1H")
     # std_series = std_series.transpose()
     rval = []
     tval = []
@@ -67,11 +71,23 @@ def pbl_height(df, stat="std", var_type=None):
 
         if var_type == "wind":
             
-            #the height is adopted at the first height where the var is lover than 0.16 m^2/s^2   
-            temp1 = temp[temp < 0.16]
-            print(temp1)
+            #the height is adopted at the first height where the var is lower than 0.16 m^2/s^2   
+            #temp1 = temp[temp < 0.16]
+            temp1 = temp[temp < 0.09]
+           
             if len(temp1) != 0:
-                val = list(temp1)[0]
+                
+                #val = (list(temp1))[-1] #changing this to the biggest value for that time from the threshold
+                val = list(temp1)
+                #val_  = min(val)
+                #val_  = max(val)
+                
+                #trying the median instead
+                ind = round(len(val)/2)
+        
+                val = val[ind]
+            
+                #maxindex = (temp == val_).argmax()
                 maxindex = (temp == val).argmax()
             #else:
             #   maxindex = temp.argmin()
@@ -86,6 +102,9 @@ def pbl_height(df, stat="std", var_type=None):
         pbl.append(pblht)
         tval.append(time)
         # stdra.append(std)
+    if var_type == "wind":
+        pbl = np.array(pbl)/2
+        
     return pd.to_datetime(tval), pbl
 
 
@@ -115,6 +134,42 @@ def dataframe_set(array1, time_array, day=None, columntype=str):
     return df
 
 
+
+def date_corrector(df):
+    
+    """
+    The functions takes a dataframe where the time index is repeated and has one column for pblh
+    The goal is to average the pblh when the values of the index are repeated.
+    
+    The function returns a data frame with only one time and day for the index and the average value as column
+    
+    
+    """
+    import numpy as np
+    import pandas as pd
+    Time = []
+    pblh = []
+    pbl_dumm =[]
+    start = df.index[0]
+    i= 0
+    for time in df.index:
+        if time == start:
+            pbl_dumm.append(df[df.columns[0]][i])
+            i+=1
+        else:
+            pblh.append(np.array(pbl_dumm).mean())
+            Time.append(start)
+            
+            pbl_dumm = []
+            start = time
+            pbl_dumm.append(df[df.columns[0]][i])
+            i+=1
+    df = pd.DataFrame(data = pblh, columns = ['Lidar_pblh'], index = Time)
+    return df
+
+
+
+
 def pbl_lidar(df):
 
     """
@@ -131,10 +186,13 @@ def pbl_lidar(df):
             if df[column][i] == 30:
                 h.append(column)
                 time.append(df.index[i])
-    data = {"Time": time, "Heigth": [int(i) for i in h]}
+                
+    df_ = pd.DataFrame(data=[int(i) for i in h], columns =["Lidar_pblh"], index = time )
 
-    df_ = pd.DataFrame(data=data)
-    return df_.resample("H", on="Time")["Heigth"].mean().round()
+    df_ = date_corrector(df_)
+    
+    return df_.resample("H").mean()
+
 
 
 def plot_all(
