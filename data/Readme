@@ -1,3 +1,5 @@
+    wrfmixht_dc.csv has data for the DC site for May 2022. One column uses kmixd=0 which gets
+    the mixing height from wrf. The other has kmixd=1 which uses temperature profiles from wrf data to calculate mixing height.
 
     wrf2_vmixingoutput.csv ran vmixing on wrf with kmixd=1 to use
     temperature profiles for computing PBL.
