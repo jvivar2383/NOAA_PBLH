@@ -1,0 +1,11 @@
+
+    wrf2_vmixingoutput.csv ran vmixing on wrf with kmixd=1 to use
+    temperature profiles for computing PBL.
+
+
+    wrf_vmixingoutput.csv change so it covers the whole month of July 2021
+    This uses kmixd=0, which gets the PBL from the wrf output.
+
+    HREF2_MixHgt.csv was added. Vmixing was run on href data with KMIXD=0 to
+    compute mixed layer from temperature profiles.
+
